@@ -2,9 +2,10 @@ import sys
 import mysql.connector
 from mysql.connector import Error
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, qApp, QLabel, QVBoxLayout, QWidget, QPushButton, \
-    QLineEdit, QMessageBox, QTableWidget, QTableWidgetItem, QGridLayout, QHBoxLayout, QGroupBox, QTextEdit, QComboBox, \
-    QDateEdit, QDateTimeEdit, QTimeEdit, QSpinBox, QDoubleSpinBox, QFormLayout, QDialog, QHeaderView
-
+    QLineEdit, QMessageBox, QGroupBox, QHBoxLayout, QComboBox, QFormLayout, QDialog, QTableWidget, QTableWidgetItem, \
+    QHeaderView, QFileDialog, QTextEdit
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtCore import Qt
 
 # Establish a connection to the MySQL database
 def create_connection(host_name, user_name, user_password, db_name):
@@ -21,16 +22,6 @@ def create_connection(host_name, user_name, user_password, db_name):
         print(f"The error '{e}' occurred")
     return connection
 
-
-# Replace with your own database credentials
-host_name = "localhost"
-user_name = "root"
-user_password = "jj1995123"
-db_name = "fiker_decor"
-
-connection = create_connection(host_name, user_name, user_password, db_name)
-
-
 # Function to execute SQL queries
 def execute_query(connection, query, data=None):
     cursor = connection.cursor()
@@ -44,7 +35,6 @@ def execute_query(connection, query, data=None):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-
 # Function to read data from the database
 def execute_read_query(connection, query):
     cursor = connection.cursor()
@@ -56,19 +46,58 @@ def execute_read_query(connection, query):
     except Error as e:
         print(f"The error '{e}' occurred")
 
-
-# PyQt5 Main Window
-class MainWindow(QMainWindow):
+# Main Window with Login and Role Selection
+class LoginWindow(QWidget):
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle('Decor Company Management System')
+        self.setGeometry(200, 200, 400, 300)
 
-        # Create menu bar
+        layout = QVBoxLayout()
+
+        self.label = QLabel("Login to Decor Company Management System")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(QFont('Arial', 14))
+        layout.addWidget(self.label)
+
+        self.role_label = QLabel("Select Role:")
+        self.role_label.setAlignment(Qt.AlignCenter)
+        self.role_label.setFont(QFont('Arial', 12))
+        layout.addWidget(self.role_label)
+
+        self.role_combo = QComboBox()
+        self.role_combo.addItems(["Admin", "Shop Cashier", "Inventory Personnel"])
+        layout.addWidget(self.role_combo)
+
+        self.login_button = QPushButton("Login")
+        self.login_button.clicked.connect(self.login)
+        layout.addWidget(self.login_button)
+
+        self.setLayout(layout)
+
+    def login(self):
+        role = self.role_combo.currentText()
+        if role == "Admin":
+            self.admin_window = AdminWindow()
+            self.admin_window.show()
+        elif role == "Shop Cashier":
+            self.cashier_window = CashierWindow()
+            self.cashier_window.show()
+        elif role == "Inventory Personnel":
+            self.inventory_window = InventoryWindow()
+            self.inventory_window.show()
+        self.close()
+
+# Admin Window
+class AdminWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Admin - Decor Company Management System')
+        self.setGeometry(100, 100, 800, 600)
+
+        # Menu Bar
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('File')
-
-        # Add actions to menu bar
         exitAction = QAction('Exit', self)
         exitAction.triggered.connect(qApp.quit)
         fileMenu.addAction(exitAction)
@@ -108,22 +137,21 @@ class MainWindow(QMainWindow):
         reportingAction.triggered.connect(self.reporting_analytics)
         menubar.addAction(reportingAction)
 
-        # Central Widget and Layout
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.layout = QVBoxLayout(self.central_widget)
 
-        self.label = QLabel("Welcome to the Decor Company Management System")
+        self.label = QLabel("Welcome Admin! Choose a management section from the menu.")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(QFont('Arial', 14))
         self.layout.addWidget(self.label)
 
     def user_management(self):
         self.clear_layout(self.layout)
 
-        # Add User Management widgets
         group_box = QGroupBox("User Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for user management
         layout.addWidget(QLabel("User Management Section"))
         layout.addWidget(QPushButton("Add User"))
         layout.addWidget(QPushButton("Update User"))
@@ -135,11 +163,9 @@ class MainWindow(QMainWindow):
     def inventory_management(self):
         self.clear_layout(self.layout)
 
-        # Add Inventory Management widgets
         group_box = QGroupBox("Inventory Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for inventory management
         layout.addWidget(QLabel("Inventory Management Section"))
         layout.addWidget(QPushButton("Add Product"))
         layout.addWidget(QPushButton("Update Product"))
@@ -151,11 +177,9 @@ class MainWindow(QMainWindow):
     def order_management(self):
         self.clear_layout(self.layout)
 
-        # Add Order Management widgets
         group_box = QGroupBox("Order Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for order management
         layout.addWidget(QLabel("Order Management Section"))
         layout.addWidget(QPushButton("Create Order"))
         layout.addWidget(QPushButton("Update Order"))
@@ -167,11 +191,9 @@ class MainWindow(QMainWindow):
     def customer_management(self):
         self.clear_layout(self.layout)
 
-        # Add Customer Management widgets
         group_box = QGroupBox("Customer Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for customer management
         layout.addWidget(QLabel("Customer Management Section"))
         layout.addWidget(QPushButton("Add Customer"))
         layout.addWidget(QPushButton("Update Customer"))
@@ -183,11 +205,9 @@ class MainWindow(QMainWindow):
     def financial_management(self):
         self.clear_layout(self.layout)
 
-        # Add Financial Management widgets
         group_box = QGroupBox("Financial Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for financial management
         layout.addWidget(QLabel("Financial Management Section"))
         layout.addWidget(QPushButton("Generate Invoice"))
         layout.addWidget(QPushButton("Record Payment"))
@@ -199,11 +219,9 @@ class MainWindow(QMainWindow):
     def task_management(self):
         self.clear_layout(self.layout)
 
-        # Add Task and Schedule Management widgets
         group_box = QGroupBox("Task and Schedule Management")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for task management
         layout.addWidget(QLabel("Task and Schedule Management Section"))
         layout.addWidget(QPushButton("Schedule Event"))
         layout.addWidget(QPushButton("Assign Task"))
@@ -215,11 +233,9 @@ class MainWindow(QMainWindow):
     def reporting_analytics(self):
         self.clear_layout(self.layout)
 
-        # Add Reporting and Analytics widgets
         group_box = QGroupBox("Reporting and Analytics")
         layout = QVBoxLayout()
 
-        # Example: Add buttons or fields for reporting and analytics
         layout.addWidget(QLabel("Reporting and Analytics Section"))
         layout.addWidget(QPushButton("Generate Sales Report"))
         layout.addWidget(QPushButton("View Inventory Report"))
@@ -234,9 +250,40 @@ class MainWindow(QMainWindow):
             if child.widget():
                 child.widget().deleteLater()
 
+# Shop Cashier Window
+class CashierWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Shop Cashier - Decor Company Management System')
+        self.setGeometry(100, 100, 800, 600)
+
+        layout = QVBoxLayout()
+
+        self.label = QLabel("Welcome Shop Cashier! This area is under development.")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(QFont('Arial', 14))
+        layout.addWidget(self.label)
+
+        self.setLayout(layout)
+
+# Inventory Personnel Window
+class InventoryWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle('Inventory Personnel - Decor Company Management System')
+        self.setGeometry(100, 100, 800, 600)
+
+        layout = QVBoxLayout()
+
+        self.label = QLabel("Welcome Inventory Personnel! This area is under development.")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setFont(QFont('Arial', 14))
+        layout.addWidget(self.label)
+
+        self.setLayout(layout)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    main_window = MainWindow()
-    main_window.show()
+    login_window = LoginWindow()
+    login_window.show()
     sys.exit(app.exec_())
