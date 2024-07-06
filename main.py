@@ -7,20 +7,22 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, qApp, QLabel, QV
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt
 
+
 # Establish a connection to the MySQL database
-def create_connection(host_name, user_name, user_password, db_name):
+def create_connection(localhost, root, jj1995123, fiker_decor):
     connection = None
     try:
         connection = mysql.connector.connect(
-            host=host_name,
-            user=user_name,
-            passwd=user_password,
-            database=db_name
+            host=localhost,
+            user=root,
+            passwd=jj1995123,
+            database=fiker_decor
         )
         print("Connection to MySQL DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
     return connection
+
 
 # Function to execute SQL queries
 def execute_query(connection, query, data=None):
@@ -35,6 +37,7 @@ def execute_query(connection, query, data=None):
     except Error as e:
         print(f"The error '{e}' occurred")
 
+
 # Function to read data from the database
 def execute_read_query(connection, query):
     cursor = connection.cursor()
@@ -46,16 +49,17 @@ def execute_read_query(connection, query):
     except Error as e:
         print(f"The error '{e}' occurred")
 
+
 # Main Window with Login and Role Selection
 class LoginWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Decor Company Management System')
+        self.setWindowTitle('Fiker Decor Banking System')
         self.setGeometry(200, 200, 400, 300)
 
         layout = QVBoxLayout()
 
-        self.label = QLabel("Login to Decor Company Management System")
+        self.label = QLabel("Login to Fiker Decor Banking System")
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setFont(QFont('Arial', 14))
         layout.addWidget(self.label)
@@ -69,30 +73,53 @@ class LoginWindow(QWidget):
         self.role_combo.addItems(["Admin", "Shop Cashier", "Inventory Personnel"])
         layout.addWidget(self.role_combo)
 
+        self.password_label = QLabel("Enter Password:")
+        self.password_label.setAlignment(Qt.AlignCenter)
+        self.password_label.setFont(QFont('Arial', 12))
+        layout.addWidget(self.password_label)
+
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.password_input)
+
         self.login_button = QPushButton("Login")
         self.login_button.clicked.connect(self.login)
+        self.login_button.setFont(QFont('Arial', 12))
         layout.addWidget(self.login_button)
 
         self.setLayout(layout)
 
     def login(self):
         role = self.role_combo.currentText()
-        if role == "Admin":
+        password = self.password_input.text()
+
+        # Define passwords for each role
+        admin_password = "admin123"
+        cashier_password = "cashier123"
+        inventory_password = "inventory123"
+
+        # Validate password based on selected role
+        if role == "Admin" and password == admin_password:
             self.admin_window = AdminWindow()
             self.admin_window.show()
-        elif role == "Shop Cashier":
+            self.close()
+        elif role == "Shop Cashier" and password == cashier_password:
             self.cashier_window = CashierWindow()
             self.cashier_window.show()
-        elif role == "Inventory Personnel":
+            self.close()
+        elif role == "Inventory Personnel" and password == inventory_password:
             self.inventory_window = InventoryWindow()
             self.inventory_window.show()
-        self.close()
+            self.close()
+        else:
+            QMessageBox.warning(self, "Login Failed", "Invalid credentials. Please try again.")
+
 
 # Admin Window
 class AdminWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Admin - Decor Company Management System')
+        self.setWindowTitle('Admin - Fiker Decor Banking System')
         self.setGeometry(100, 100, 800, 600)
 
         # Menu Bar
@@ -127,8 +154,8 @@ class AdminWindow(QMainWindow):
         financialManagementAction.triggered.connect(self.financial_management)
         menubar.addAction(financialManagementAction)
 
-        # Task and Schedule Management Action
-        taskManagementAction = QAction('Task and Schedule Management', self)
+        # Task Management Action
+        taskManagementAction = QAction('Task Management', self)
         taskManagementAction.triggered.connect(self.task_management)
         menubar.addAction(taskManagementAction)
 
@@ -219,11 +246,11 @@ class AdminWindow(QMainWindow):
     def task_management(self):
         self.clear_layout(self.layout)
 
-        group_box = QGroupBox("Task and Schedule Management")
+        group_box = QGroupBox("Task Management")
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel("Task and Schedule Management Section"))
-        layout.addWidget(QPushButton("Schedule Event"))
+        layout.addWidget(QLabel("Task Management Section"))
+        layout.addWidget(QPushButton("Schedule Task"))
         layout.addWidget(QPushButton("Assign Task"))
         layout.addWidget(QPushButton("View Calendar"))
 
@@ -250,11 +277,12 @@ class AdminWindow(QMainWindow):
             if child.widget():
                 child.widget().deleteLater()
 
+
 # Shop Cashier Window
 class CashierWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Shop Cashier - Decor Company Management System')
+        self.setWindowTitle('Shop Cashier - Fiker Decor Banking System')
         self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
@@ -266,11 +294,12 @@ class CashierWindow(QWidget):
 
         self.setLayout(layout)
 
+
 # Inventory Personnel Window
 class InventoryWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Inventory Personnel - Decor Company Management System')
+        self.setWindowTitle('Inventory Personnel - Fiker Decor Banking System')
         self.setGeometry(100, 100, 800, 600)
 
         layout = QVBoxLayout()
@@ -282,8 +311,15 @@ class InventoryWindow(QWidget):
 
         self.setLayout(layout)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    login_window = LoginWindow()
-    login_window.show()
-    sys.exit(app.exec_())
+    connection = create_connection("localhost", "root", "jj1995123", "fiker_decor")
+
+    if connection:
+        print("Connection successfully established.")
+        login_window = LoginWindow()
+        login_window.show()
+        sys.exit(app.exec_())
+    else:
+        print("Connection could not be established.")
